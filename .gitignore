@@ -1,0 +1,24 @@
+# Node & Package Managers
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Production Builds
+client/dist/
+dist/
+
+# Local Environment Variables & Secrets
+.env
+.env.local
+.env.*.local
+
+# Local Database & Cache
+server/data/knovera_local.json
+*.log
+
+# Editor & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

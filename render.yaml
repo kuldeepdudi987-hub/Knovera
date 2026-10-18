@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: knovera-web
+    env: node
+    plan: free
+    region: oregon
+    buildCommand: npm install && npm --prefix client install && npm --prefix client run build
+    startCommand: node server/index.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: MERCHANT_UPI_ID
+        value: 9680877599@ybl
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: knovera-db
+          property: connectionString
+
+databases:
+  - name: knovera-db
+    plan: free
+    region: oregon
+    databaseName: knovera
+    user: knovera_user
