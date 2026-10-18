@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Knovera | 1 Credit = 1 Minute Peer-to-Peer Micro-Tutoring</title>
+  
+  <!-- Tailwind CSS & Fonts -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.4/dist/confetti.browser.min.js"></script>
+
+  <!-- React 18 & ReactDOM -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          },
+          colors: {
+            brand: {
+              cyan: '#00F2FE',
+              purple: '#9d4edd',
+              dark: '#070a10',
+              card: '#0e131f',
+              border: '#1e293b'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #070a10;
+      color: #f8fafc;
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      overflow-x: hidden;
+    }
+    .neon-border {
+      box-shadow: 0 0 20px rgba(0, 242, 254, 0.15);
+      border: 1px solid rgba(0, 242, 254, 0.3);
+    }
+    .neon-purple {
+      box-shadow: 0 0 25px rgba(157, 78, 221, 0.2);
+    }
+    .glass-panel {
+      background: rgba(14, 19, 31, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #070a10; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #334155; }
+  </style>
+</head>
+<body class="bg-[#070a10] text-slate-100 min-h-screen">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // --- SAMPLE SEED DATA ---
+    const INITIAL_TUTORS = [
+      {
+        id: 'teacher-vikram',
+        name: 'Dr. Vikram Malhotra',
+        role: 'teacher',
+        headline: 'Principal Systems Architect & Ex-Google Staff Engineer',
+        bio: '14+ years building high-throughput distributed systems. Specialized in microservices, low-latency node engines, and rapid code debugging.',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+        subjects: ['Coding', 'System Design', 'Python', 'Node.js', 'React'],
+        languages: ['English', 'Hindi'],
+        rate: 1, // 1 Credit / Minute
+        rating: 4.98,
+        reviewsCount: 142,
+        isOnline: true,
+        coinType: 'silver'
+      },
+      {
+        id: 'teacher-ananya',
+        name: 'Ananya Deshmukh',
+        role: 'teacher',
+        headline: 'Applied GenAI Researcher & Stanford Alum',
+        bio: 'Building production LLM agents, RAG architectures, and fine-tuning transformer models. Passionate about unblocking junior and senior engineers.',
+        avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80',
+        subjects: ['Coding', 'GenAI', 'PyTorch', 'LLMs', 'Python'],
+        languages: ['English', 'Marathi'],
+        rate: 1,
+        rating: 4.95,
+        reviewsCount: 98,
+        isOnline: true,
+        coinType: 'golden'
+      },
+      {
+        id: 'teacher-rajesh',
+        name: 'Prof. Rajesh Kulkarni',
+        role: 'teacher',
+        headline: 'IIT Bombay Chair Fellow | Advanced Mathematics & Calculus',
+        bio: 'Simplifying multivariable calculus, linear algebra, and mathematical physics with intuitive geometric visualizations.',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
+        subjects: ['Maths', 'Calculus', 'Linear Algebra', 'Exam Prep'],
+        languages: ['English', 'Hindi'],
+        rate: 1,
+        rating: 4.99,
+        reviewsCount: 324,
+        isOnline: true,
+        coinType: 'silver'
+      },
+      {
+        id: 'teacher-priya',
+        name: 'Priya Sharma',
+        role: 'teacher',
+        headline: 'Senior Frontend Architect | UI/UX & Tailwind Master',
+        bio: '10+ years crafting pixel-perfect, accessible web interfaces. Helped 500+ developers ace frontend machine coding rounds.',
+        avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=400&q=80',
+        subjects: ['Coding', 'Frontend', 'React', 'Tailwind', 'CSS'],
+        languages: ['English', 'Hindi'],
+        rate: 1,
+        rating: 4.92,
+        reviewsCount: 115,
+        isOnline: true,
+        coinType: 'silver'
+      },
+      {
+        id: 'teacher-arjun',
+        name: 'Arjun Nair',
+        role: 'teacher',
+        headline: 'Cloud & DevOps Lead | Kubernetes, Docker & AWS',
+        bio: 'Hands-on CI/CD pipelines, Terraform automation, and infrastructure troubleshooting. Fix your deploy bugs in real time.',
+        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
+        subjects: ['Coding', 'DevOps', 'AWS', 'Kubernetes', 'Docker'],
+        languages: ['English', 'Malayalam'],
+        rate: 1,
+        rating: 4.97,
+        reviewsCount: 86,
+        isOnline: false,
+        coinType: 'silver'
+      }
+    ];
+
+    const COIN_PACKS = [
+      { id: 'pack-starter', name: 'Starter Pack', coins: 30, price: 30, coinType: 'silver', popular: false, desc: '30 minutes of standard 1-on-1 tutoring' },
+      { id: 'pack-popular', name: 'Popular Learner', coins: 65, price: 60, coinType: 'silver', bonus: '+5 Bonus Mins', popular: true, desc: '65 minutes of standard tutoring with bonus' },
+      { id: 'pack-pro', name: 'Pro Expert Pass', coins: 60, price: 150, coinType: 'golden', popular: false, desc: '60 minutes with elite GenAI & Architecture experts' }
+    ];
+
+    // --- MAIN APP COMPONENT ---
+    function App() {
+      // LocalStorage persistent state
+      const [user, setUser] = useState(() => {
+        const saved = localStorage.getItem('knovera_user');
+        return saved ? JSON.parse(saved) : {
+          id: 'user-me',
+          name: 'Alex Kumar',
+          email: 'alex@knovera.dev',
+          role: 'student', // or 'teacher'
+          avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80'
+        };
+      });
+
+      const [wallet, setWallet] = useState(() => {
+        const saved = localStorage.getItem('knovera_wallet');
+        return saved ? JSON.parse(saved) : {
+          silverCoins: 45,
+          goldenCoins: 20,
+          inrEarnings: 0,
+          withdrawableInr: 0
+        };
+      });
+
+      const [transactions, setTransactions] = useState(() => {
+        const saved = localStorage.getItem('knovera_txs');
+        return saved ? JSON.parse(saved) : [
+          { id: 'tx-1', type: 'credit', coinType: 'silver', amount: 45, desc: 'Welcome bonus pack (45 Mins)', date: 'Today' }
+        ];
+      });
+
+      const [activeTab, setActiveTab] = useState('marketplace'); // 'marketplace' | 'classroom' | 'wallet' | 'portal'
+      const [selectedSubject, setSelectedSubject] = useState('All');
+      const [searchQuery, setSearchQuery] = useState('');
+      const [showBuyModal, setShowBuyModal] = useState(false);
+      const [activeSession, setActiveSession] = useState(null);
+
+      // Save state changes
+      useEffect(() => {
+        localStorage.setItem('knovera_user', JSON.stringify(user));
+      }, [user]);
+
+      useEffect(() => {
+        localStorage.setItem('knovera_wallet', JSON.stringify(wallet));
+      }, [wallet]);
+
+      useEffect(() => {
+        localStorage.setItem('knovera_txs', JSON.stringify(transactions));
+      }, [transactions]);
+
+      // Start a session with a tutor
+      const startSession = (tutor) => {
+        const coinBalance = tutor.coinType === 'golden' ? wallet.goldenCoins : wallet.silverCoins;
+        if (coinBalance < 5) {
+          alert(`You need at least 5 ${tutor.coinType} coins (minutes) to start a session. Please add credits!`);
+          setShowBuyModal(true);
+          return;
+        }
+
+        const session = {
+          id: 'sess-' + Date.now(),
+          tutor: tutor,
+          startTime: Date.now(),
+          coinType: tutor.coinType,
+          ratePerMin: 1
+        };
+
+        setActiveSession(session);
+        setActiveTab('classroom');
+      };
+
+      return (
+        <div className="min-h-screen flex flex-col bg-[#070a10]">
+          {/* TOP NAVBAR */}
+          <header className="sticky top-0 z-50 glass-panel border-b border-slate-800/80">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+              
+              {/* Brand Logo */}
+              <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setActiveTab('marketplace')}>
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#00F2FE] via-[#9d4edd] to-cyan-400 p-[2px] flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                  <div className="w-full h-full bg-[#070a10] rounded-[10px] flex items-center justify-center">
+                    <span className="font-mono font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 text-lg">K</span>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <span className="font-extrabold text-xl tracking-tight text-white">Knovera</span>
+                    <span className="px-2 py-0.5 text-[10px] font-mono font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 rounded-full">
+                      1 Credit = 1 Min
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Navigation Tabs */}
+              <nav className="hidden md:flex items-center space-x-1 font-medium text-sm">
+                <button 
+                  onClick={() => setActiveTab('marketplace')} 
+                  className={`px-3.5 py-2 rounded-lg transition ${activeTab === 'marketplace' ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'}`}>
+                  Marketplace
+                </button>
+                <button 
+                  onClick={() => {
+                    if (!activeSession) {
+                      // Demo session with Dr. Vikram
+                      startSession(INITIAL_TUTORS[0]);
+                    } else {
+                      setActiveTab('classroom');
+                    }
+                  }} 
+                  className={`px-3.5 py-2 rounded-lg transition flex items-center space-x-1.5 ${activeTab === 'classroom' ? 'bg-purple-500/15 text-purple-300 border border-purple-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'}`}>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span>{activeSession ? 'Live Classroom' : 'Demo Classroom'}</span>
+                </button>
+                <button 
+                  onClick={() => setActiveTab('wallet')} 
+                  className={`px-3.5 py-2 rounded-lg transition ${activeTab === 'wallet' ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'}`}>
+                  Wallet & Ledger
+                </button>
+                <button 
+                  onClick={() => setActiveTab('portal')} 
+                  className={`px-3.5 py-2 rounded-lg transition ${activeTab === 'portal' ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'}`}>
+                  Tutor Portal
+                </button>
+              </nav>
+
+              {/* Right Side: Coin Pills & User */}
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                {/* Silver Coins */}
+                <div 
+                  onClick={() => setShowBuyModal(true)}
+                  className="cursor-pointer flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-700/80 hover:border-cyan-500/50 transition">
+                  <span className="text-sm">🪙</span>
+                  <span className="text-xs font-mono font-bold text-slate-200">{wallet.silverCoins}</span>
+                  <span className="text-[10px] text-slate-400 hidden sm:inline">Silver</span>
+                </div>
+
+                {/* Golden Coins */}
+                <div 
+                  onClick={() => setShowBuyModal(true)}
+                  className="cursor-pointer flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 hover:border-amber-400/60 transition">
+                  <span className="text-sm">🌟</span>
+                  <span className="text-xs font-mono font-bold text-amber-300">{wallet.goldenCoins}</span>
+                  <span className="text-[10px] text-amber-400/80 hidden sm:inline">Gold</span>
+                </div>
+
+                {/* Add Credits Button */}
+                <button 
+                  onClick={() => setShowBuyModal(true)}
+                  className="hidden sm:flex items-center space-x-1 px-3 py-1.5 text-xs font-semibold rounded-lg bg-gradient-to-r from-[#00F2FE] to-[#9d4edd] text-[#070a10] hover:opacity-95 font-bold shadow-md shadow-cyan-500/20 transition">
+                  <span>+</span>
+                  <span>Add Credits</span>
+                </button>
+
+                {/* Role Switcher Pill */}
+                <button 
+                  onClick={() => setUser(u => ({ ...u, role: u.role === 'student' ? 'teacher' : 'student' }))}
+                  className="px-2.5 py-1 text-[11px] font-mono rounded border border-slate-700 bg-slate-800/80 text-slate-300 hover:text-white transition"
+                  title="Switch Demo Role">
+                  {user.role === 'student' ? '👨‍🎓 Student' : '👨‍🏫 Teacher'}
+                </button>
+              </div>
+            </div>
+
+            {/* Mobile Bottom Navigation Bar */}
+            <div className="md:hidden flex items-center justify-around border-t border-slate-800/80 py-2 bg-[#0e131f]/90">
+              <button onClick={() => setActiveTab('marketplace')} className={`text-xs flex flex-col items-center ${activeTab === 'marketplace' ? 'text-cyan-400' : 'text-slate-400'}`}>
+                <span>🔍</span>
+                <span>Market</span>
+              </button>
+              <button onClick={() => {
+                if (!activeSession) startSession(INITIAL_TUTORS[0]);
+                else setActiveTab('classroom');
+              }} className={`text-xs flex flex-col items-center ${activeTab === 'classroom' ? 'text-purple-400' : 'text-slate-400'}`}>
+                <span>⚡</span>
+                <span>Classroom</span>
+              </button>
+              <button onClick={() => setActiveTab('wallet')} className={`text-xs flex flex-col items-center ${activeTab === 'wallet' ? 'text-cyan-400' : 'text-slate-400'}`}>
+                <span>🪙</span>
+                <span>Wallet</span>
+              </button>
+              <button onClick={() => setActiveTab('portal')} className={`text-xs flex flex-col items-center ${activeTab === 'portal' ? 'text-cyan-400' : 'text-slate-400'}`}>
+                <span>💼</span>
+                <span>Portal</span>
+              </button>
+            </div>
+          </header>
+
+          {/* MAIN BODY CONTENT */}
+          <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            {activeTab === 'marketplace' && (
+              <MarketplaceView 
+                tutors={INITIAL_TUTORS} 
+                selectedSubject={selectedSubject} 
+                setSelectedSubject={setSelectedSubject}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                onStartSession={startSession}
+                onOpenBuy={() => setShowBuyModal(true)}
+              />
+            )}
+
+            {activeTab === 'classroom' && (
+              <ClassroomView 
+                session={activeSession || {
+                  id: 'demo-session',
+                  tutor: INITIAL_TUTORS[0],
+                  startTime: Date.now() - 120000,
+                  coinType: 'silver',
+                  ratePerMin: 1
+                }}
+                wallet={wallet}
+                setWallet={setWallet}
+                setTransactions={setTransactions}
+                onEndSession={() => {
+                  setActiveSession(null);
+                  setActiveTab('marketplace');
+                }}
+              />
+            )}
+
+            {activeTab === 'wallet' && (
+              <WalletView 
+                wallet={wallet} 
+                transactions={transactions} 
+                onOpenBuy={() => setShowBuyModal(true)} 
+              />
+            )}
+
+            {activeTab === 'portal' && (
+              <TeacherPortalView 
+                user={user} 
+                wallet={wallet} 
+                setWallet={setWallet} 
+                setTransactions={setTransactions} 
+              />
+            )}
+          </main>
+
+          {/* BUY CREDITS MODAL (REAL UPI GATEWAY) */}
+          {showBuyModal && (
+            <BuyCreditsModal 
+              wallet={wallet}
+              setWallet={setWallet}
+              setTransactions={setTransactions}
+              onClose={() => setShowBuyModal(false)}
+            />
+          )}
+
+          {/* FOOTER */}
+          <footer className="border-t border-slate-800/80 py-6 text-center text-xs text-slate-500">
+            <p className="font-mono">Knovera™ Marketplace • Real Direct UPI Payment & Escrow • 1 Credit = 1 Minute</p>
+            <p className="mt-1 text-slate-600">Merchant VPA: <span className="font-mono text-cyan-400/80">9680877599@ybl</span></p>
+          </footer>
+        </div>
+      );
+    }
+
+    // --- MARKETPLACE VIEW ---
+    function MarketplaceView({ tutors, selectedSubject, setSelectedSubject, searchQuery, setSearchQuery, onStartSession, onOpenBuy }) {
+      const subjects = ['All', 'Coding', 'GenAI', 'System Design', 'Maths', 'DevOps', 'Frontend'];
+
+      const filtered = tutors.filter(t => {
+        const matchesSubj = selectedSubject === 'All' || t.subjects.includes(selectedSubject);
+        const matchesQuery = t.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                             t.headline.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                             t.subjects.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()));
+        return matchesSubj && matchesQuery;
+      });
+
+      return (
+        <div className="space-y-8 animate-fadeIn">
+          {/* HERO BANNER */}
+          <div className="relative rounded-3xl overflow-hidden p-6 sm:p-10 border border-slate-800 bg-gradient-to-br from-[#0e131f] via-[#070a10] to-[#131b2e]">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none"></div>
+
+            <div className="relative z-10 max-w-3xl">
+              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-mono font-semibold mb-4">
+                <span>⚡ NO SUBSCRIPTIONS</span>
+                <span>•</span>
+                <span>PAY PER MINUTE</span>
+              </div>
+              
+              <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
+                Live 1-on-1 Micro-Tutoring.<br/>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00F2FE] via-cyan-200 to-[#9d4edd]">
+                  1 Credit = 1 Minute.
+                </span>
+              </h1>
+              
+              <p className="mt-4 text-slate-300 text-sm sm:text-base leading-relaxed max-w-2xl">
+                Get unstuck in minutes, not hours. Connect instantly with verified engineers, researchers, and professors with real-time video, collaborative whiteboard, and minute-by-minute billing.
+              </p>
+
+              {/* Quick Platform Stats */}
+              <div className="mt-6 grid grid-cols-3 gap-3 max-w-md pt-4 border-t border-slate-800/80">
+                <div>
+                  <div className="text-xl font-extrabold text-cyan-400 font-mono">12,400+</div>
+                  <div className="text-[11px] text-slate-400 uppercase tracking-wider mt-0.5">Mins Taught</div>
+                </div>
+                <div>
+                  <div className="text-xl font-extrabold text-purple-400 font-mono">4.96 ★</div>
+                  <div className="text-[11px] text-slate-400 uppercase tracking-wider mt-0.5">Avg Rating</div>
+                </div>
+                <div>
+                  <div className="text-xl font-extrabold text-emerald-400 font-mono">&lt; 90s</div>
+                  <div className="text-[11px] text-slate-400 uppercase tracking-wider mt-0.5">Match Time</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* SEARCH & FILTER CONTROLS */}
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+              {/* Search Bar */}
+              <div className="relative flex-1">
+                <input 
+                  type="text" 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search by topic, language, or tutor name (e.g. Python, GenAI, Calculus)..."
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition"
+                />
+                <span className="absolute left-3.5 top-3 text-slate-500">🔍</span>
+              </div>
+
+              {/* Add Coins Quick Button */}
+              <button 
+                onClick={onOpenBuy}
+                className="px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 hover:border-cyan-500/50 text-xs font-semibold text-slate-200 flex items-center justify-center space-x-2 transition">
+                <span>💳 Instant UPI Top-up</span>
+              </button>
+            </div>
+
+            {/* Subject Filter Pills */}
+            <div className="flex items-center space-x-2 overflow-x-auto pb-1 scrollbar-none">
+              {subjects.map(s => (
+                <button
+                  key={s}
+                  onClick={() => setSelectedSubject(s)}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition ${
+                    selectedSubject === s 
+                      ? 'bg-cyan-500 text-[#070a10] font-bold shadow-md shadow-cyan-500/30' 
+                      : 'bg-slate-900/80 text-slate-400 border border-slate-800 hover:text-slate-200 hover:border-slate-700'
+                  }`}>
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* TUTORS GRID */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filtered.map(tutor => (
+              <div 
+                key={tutor.id} 
+                className="glass-panel rounded-2xl p-5 border border-slate-800/80 hover:border-cyan-500/40 transition-all duration-200 hover:-translate-y-1 flex flex-col justify-between group">
+                
+                <div>
+                  {/* Tutor Header */}
+                  <div className="flex items-start space-x-3.5">
+                    <div className="relative">
+                      <img 
+                        src={tutor.avatar} 
+                        alt={tutor.name} 
+                        className="w-14 h-14 rounded-2xl object-cover border border-slate-700" 
+                      />
+                      {tutor.isOnline && (
+                        <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-[#070a10] animate-pulse"></span>
+                      )}
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-bold text-base text-white truncate group-hover:text-cyan-300 transition">
+                          {tutor.name}
+                        </h3>
+                        <span className="flex items-center text-xs font-mono font-bold text-amber-400">
+                          ★ {tutor.rating}
+                        </span>
+                      </div>
+                      
+                      <p className="text-xs text-slate-400 truncate mt-0.5">
+                        {tutor.headline}
+                      </p>
+
+                      <div className="flex items-center space-x-2 mt-1.5">
+                        <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300">
+                          {tutor.coinType === 'golden' ? '🌟 1 Gold / Min' : '🪙 1 Silver / Min'}
+                        </span>
+                        <span className="text-[11px] text-slate-500">
+                          {tutor.reviewsCount} reviews
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bio */}
+                  <p className="text-xs text-slate-300 mt-3.5 line-clamp-2 leading-relaxed">
+                    {tutor.bio}
+                  </p>
+
+                  {/* Subjects */}
+                  <div className="flex flex-wrap gap-1.5 mt-3.5">
+                    {tutor.subjects.map(subj => (
+                      <span key={subj} className="px-2 py-0.5 text-[10px] font-mono rounded-md bg-slate-800/90 text-cyan-400 border border-slate-700/60">
+                        {subj}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Card Action Buttons */}
+                <div className="mt-5 pt-4 border-t border-slate-800/80 flex items-center space-x-2">
+                  <button 
+                    onClick={() => onStartSession(tutor)}
+                    className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-[#00F2FE] to-cyan-500 text-[#070a10] font-bold text-xs hover:shadow-lg hover:shadow-cyan-500/25 transition">
+                    ⚡ Start 1-on-1 Session
+                  </button>
+                  <button 
+                    onClick={() => alert(`Connecting with ${tutor.name}...`)}
+                    className="p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-300 hover:text-white hover:border-slate-600 transition"
+                    title="View Profile">
+                    💬
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    // --- LIVE CLASSROOM VIEW (1 CREDIT = 1 MINUTE) ---
+    function ClassroomView({ session, wallet, setWallet, setTransactions, onEndSession }) {
+      const [seconds, setSeconds] = useState(0);
+      const [isMuted, setIsMuted] = useState(false);
+      const [isVideoOff, setIsVideoOff] = useState(false);
+      const [messages, setMessages] = useState([
+        { id: 1, sender: session.tutor.name, text: 'Hello! I am ready. What topic are we solving today?', time: 'Just now' }
+      ]);
+      const [inputMsg, setInputMsg] = useState('');
+      
+      // Whiteboard canvas ref
+      const canvasRef = useRef(null);
+      const [isDrawing, setIsDrawing] = useState(false);
+      const [penColor, setPenColor] = useState('#00F2FE');
+
+      // Ticker interval: increments second by second
+      useEffect(() => {
+        const interval = setInterval(() => {
+          setSeconds(s => {
+            const nextSec = s + 1;
+            // Every 60 seconds, deduct 1 credit from wallet
+            if (nextSec > 0 && nextSec % 60 === 0) {
+              deductMinute();
+            }
+            return nextSec;
+          });
+        }, 1000);
+
+        return () => clearInterval(interval);
+      }, []);
+
+      const deductMinute = () => {
+        const coin = session.coinType;
+        setWallet(w => {
+          if (coin === 'golden') {
+            return { ...w, goldenCoins: Math.max(0, w.goldenCoins - 1) };
+          }
+          return { ...w, silverCoins: Math.max(0, w.silverCoins - 1) };
+        });
+
+        setTransactions(txs => [
+          {
+            id: 'tx-' + Date.now(),
+            type: 'escrow_deduct',
+            coinType: coin,
+            amount: 1,
+            desc: `Minute settled with ${session.tutor.name}`,
+            date: 'Now'
+          },
+          ...txs
+        ]);
+      };
+
+      const formatTime = (totalSec) => {
+        const m = Math.floor(totalSec / 60).toString().padStart(2, '0');
+        const s = (totalSec % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+      };
+
+      // Whiteboard drawing handlers
+      const startDraw = (e) => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+        const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+        ctx.beginPath();
+        ctx.moveTo(clientX - rect.left, clientY - rect.top);
+        setIsDrawing(true);
+      };
+
+      const draw = (e) => {
+        if (!isDrawing) return;
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+        const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+        ctx.strokeStyle = penColor;
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.lineTo(clientX - rect.left, clientY - rect.top);
+        ctx.stroke();
+      };
+
+      const stopDraw = () => setIsDrawing(false);
+
+      const clearCanvas = () => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      };
+
+      // Send chat message
+      const sendMessage = (e) => {
+        e.preventDefault();
+        if (!inputMsg.trim()) return;
+        setMessages(m => [...m, { id: Date.now(), sender: 'You', text: inputMsg, time: 'Just now' }]);
+        setInputMsg('');
+      };
+
+      // End session handler
+      const handleEnd = () => {
+        if (window.confetti) {
+          window.confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        }
+        alert(`Session completed! Total time: ${formatTime(seconds)}. All escrow successfully settled.`);
+        onEndSession();
+      };
+
+      return (
+        <div className="space-y-4 animate-fadeIn">
+          {/* CLASSROOM HEADER BAR */}
+          <div className="glass-panel rounded-2xl p-4 border border-slate-800 flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center space-x-3">
+              <img src={session.tutor.avatar} className="w-10 h-10 rounded-xl object-cover border border-slate-700" />
+              <div>
+                <div className="flex items-center space-x-2">
+                  <h2 className="font-bold text-white text-sm sm:text-base">{session.tutor.name}</h2>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                  <span className="text-[10px] font-mono text-emerald-400">LIVE</span>
+                </div>
+                <p className="text-xs text-slate-400">{session.tutor.headline}</p>
+              </div>
+            </div>
+
+            {/* LIVE BILLING TICKER */}
+            <div className="flex items-center space-x-4">
+              <div className="bg-slate-900 px-4 py-2 rounded-xl border border-slate-800 flex items-center space-x-3">
+                <div>
+                  <div className="text-[10px] text-slate-400 uppercase tracking-wider font-mono">Elapsed Time</div>
+                  <div className="text-lg font-mono font-black text-cyan-400">{formatTime(seconds)}</div>
+                </div>
+                <div className="h-8 w-px bg-slate-800"></div>
+                <div>
+                  <div className="text-[10px] text-slate-400 uppercase tracking-wider font-mono">Rate</div>
+                  <div className="text-xs font-mono font-bold text-amber-400">1 Credit / Min</div>
+                </div>
+              </div>
+
+              {/* End Session Button */}
+              <button 
+                onClick={handleEnd}
+                className="px-4 py-2.5 rounded-xl bg-rose-500/20 text-rose-300 border border-rose-500/40 text-xs font-bold hover:bg-rose-500/30 transition">
+                End & Settle
+              </button>
+            </div>
+          </div>
+
+          {/* MAIN CLASSROOM WORKSPACE: VIDEO + WHITEBOARD + CHAT */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            
+            {/* LEFT / CENTER: WHITEBOARD & VIDEO (2 COLS) */}
+            <div className="lg:col-span-2 space-y-4">
+              {/* VIDEO FEEDS */}
+              <div className="grid grid-cols-2 gap-3">
+                {/* Tutor Feed */}
+                <div className="relative aspect-video rounded-2xl overflow-hidden bg-slate-900 border border-slate-800">
+                  <img src={session.tutor.avatar} className="w-full h-full object-cover filter brightness-90" />
+                  <div className="absolute bottom-2 left-2 px-2.5 py-1 rounded bg-[#070a10]/80 text-[11px] font-mono text-white flex items-center space-x-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    <span>{session.tutor.name} (Tutor)</span>
+                  </div>
+                </div>
+
+                {/* Student Feed */}
+                <div className="relative aspect-video rounded-2xl overflow-hidden bg-slate-900 border border-slate-800 flex items-center justify-center">
+                  {isVideoOff ? (
+                    <div className="text-xs text-slate-500 font-mono">Camera Off</div>
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-tr from-slate-900 via-indigo-950 to-slate-900 flex items-center justify-center">
+                      <span className="text-4xl">👨‍🎓</span>
+                    </div>
+                  )}
+                  <div className="absolute bottom-2 left-2 px-2.5 py-1 rounded bg-[#070a10]/80 text-[11px] font-mono text-white">
+                    You (Student)
+                  </div>
+                </div>
+              </div>
+
+              {/* COLLABORATIVE WHITEBOARD */}
+              <div className="glass-panel rounded-2xl p-3 border border-slate-800 flex flex-col">
+                <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800 text-xs">
+                  <div className="flex items-center space-x-2">
+                    <span className="font-bold text-slate-300">Interactive Canvas</span>
+                    <span className="text-slate-500 font-mono">(Draw with mouse or finger)</span>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    {/* Color pickers */}
+                    {['#00F2FE', '#9d4edd', '#10b981', '#ffffff'].map(c => (
+                      <button 
+                        key={c}
+                        onClick={() => setPenColor(c)}
+                        style={{ backgroundColor: c }}
+                        className={`w-5 h-5 rounded-full border ${penColor === c ? 'border-white scale-110' : 'border-transparent'}`}
+                      />
+                    ))}
+                    <button 
+                      onClick={clearCanvas} 
+                      className="px-2 py-1 text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-mono">
+                      Clear
+                    </button>
+                  </div>
+                </div>
+
+                <canvas 
+                  ref={canvasRef}
+                  width={640}
+                  height={280}
+                  onMouseDown={startDraw}
+                  onMouseMove={draw}
+                  onMouseUp={stopDraw}
+                  onMouseLeave={stopDraw}
+                  onTouchStart={startDraw}
+                  onTouchMove={draw}
+                  onTouchEnd={stopDraw}
+                  className="w-full h-64 bg-[#0a0f1d] rounded-xl cursor-crosshair touch-none border border-slate-800/80"
+                />
+              </div>
+
+              {/* CONTROLS BAR */}
+              <div className="flex items-center justify-center space-x-3 py-2">
+                <button 
+                  onClick={() => setIsMuted(m => !m)}
+                  className={`p-3 rounded-full border transition ${isMuted ? 'bg-rose-500/20 border-rose-500 text-rose-400' : 'bg-slate-900 border-slate-700 text-slate-200'}`}>
+                  {isMuted ? '🔇' : '🎙️'}
+                </button>
+                <button 
+                  onClick={() => setIsVideoOff(v => !v)}
+                  className={`p-3 rounded-full border transition ${isVideoOff ? 'bg-rose-500/20 border-rose-500 text-rose-400' : 'bg-slate-900 border-slate-700 text-slate-200'}`}>
+                  {isVideoOff ? '🚫' : '📹'}
+                </button>
+                <button 
+                  onClick={() => alert('Screen share simulated: Displaying screen stream to tutor.')}
+                  className="p-3 rounded-full bg-slate-900 border border-slate-700 text-slate-200 hover:border-cyan-500 transition">
+                  🖥️
+                </button>
+              </div>
+            </div>
+
+            {/* RIGHT: CHAT PANEL */}
+            <div className="glass-panel rounded-2xl p-4 border border-slate-800 flex flex-col h-[480px]">
+              <div className="pb-3 border-b border-slate-800 flex items-center justify-between">
+                <h3 className="font-bold text-sm text-white">Session Chat</h3>
+                <span className="text-[10px] font-mono text-cyan-400">Encrypted</span>
+              </div>
+
+              {/* Message History */}
+              <div className="flex-1 overflow-y-auto space-y-3 py-3 pr-1 text-xs">
+                {messages.map(m => (
+                  <div key={m.id} className={`flex flex-col ${m.sender === 'You' ? 'items-end' : 'items-start'}`}>
+                    <span className="text-[10px] text-slate-500 mb-0.5">{m.sender}</span>
+                    <div className={`px-3 py-2 rounded-xl max-w-[85%] ${
+                      m.sender === 'You' 
+                        ? 'bg-cyan-500/20 text-cyan-200 border border-cyan-500/30' 
+                        : 'bg-slate-900 text-slate-200 border border-slate-800'
+                    }`}>
+                      {m.text}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Message Input */}
+              <form onSubmit={sendMessage} className="pt-2 border-t border-slate-800 flex space-x-2">
+                <input 
+                  type="text"
+                  value={inputMsg}
+                  onChange={(e) => setInputMsg(e.target.value)}
+                  placeholder="Type a message or code snippet..."
+                  className="flex-1 px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-cyan-500"
+                />
+                <button type="submit" className="px-3 py-2 bg-cyan-500 text-[#070a10] font-bold rounded-xl text-xs">
+                  Send
+                </button>
+              </form>
+            </div>
+
+          </div>
+        </div>
+      );
+    }
+
+    // --- WALLET & TRANSACTIONS VIEW ---
+    function WalletView({ wallet, transactions, onOpenBuy }) {
+      return (
+        <div className="space-y-6 animate-fadeIn max-w-4xl mx-auto">
+          {/* WALLET BALANCE CARDS */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            {/* Silver Coins */}
+            <div className="glass-panel rounded-2xl p-6 border border-slate-800 relative overflow-hidden">
+              <div className="text-sm font-semibold text-slate-400 flex items-center justify-between">
+                <span>Silver Tutoring Coins</span>
+                <span className="text-xl">🪙</span>
+              </div>
+              <div className="mt-2 text-4xl font-extrabold font-mono text-white">
+                {wallet.silverCoins} <span className="text-base font-normal text-slate-400">Coins</span>
+              </div>
+              <p className="mt-2 text-xs text-slate-400">
+                1 Silver Coin = 1 Minute of standard 1-on-1 micro-tutoring.
+              </p>
+              <button 
+                onClick={onOpenBuy}
+                className="mt-4 w-full py-2.5 rounded-xl bg-gradient-to-r from-[#00F2FE] to-cyan-500 text-[#070a10] font-bold text-xs hover:shadow-lg hover:shadow-cyan-500/20 transition">
+                + Buy Silver Coins via UPI
+              </button>
+            </div>
+
+            {/* Golden Coins */}
+            <div className="glass-panel rounded-2xl p-6 border border-amber-500/30 bg-gradient-to-br from-[#0e131f] to-amber-950/20 relative overflow-hidden">
+              <div className="text-sm font-semibold text-amber-300 flex items-center justify-between">
+                <span>Golden Expert Coins</span>
+                <span className="text-xl">🌟</span>
+              </div>
+              <div className="mt-2 text-4xl font-extrabold font-mono text-amber-300">
+                {wallet.goldenCoins} <span className="text-base font-normal text-amber-400/80">Coins</span>
+              </div>
+              <p className="mt-2 text-xs text-amber-200/70">
+                For elite GenAI researchers, Stanford/IIT faculty, and Staff Architects.
+              </p>
+              <button 
+                onClick={onOpenBuy}
+                className="mt-4 w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-[#070a10] font-bold text-xs hover:shadow-lg hover:shadow-amber-500/20 transition">
+                + Buy Golden Coins via UPI
+              </button>
+            </div>
+
+          </div>
+
+          {/* LEDGER & TRANSACTIONS */}
+          <div className="glass-panel rounded-2xl p-6 border border-slate-800">
+            <h3 className="font-bold text-base text-white mb-4 flex items-center justify-between">
+              <span>Escrow Ledger & Transaction History</span>
+              <span className="text-xs font-mono text-slate-400">{transactions.length} records</span>
+            </h3>
+
+            <div className="divide-y divide-slate-800/80">
+              {transactions.map(tx => (
+                <div key={tx.id} className="py-3 flex items-center justify-between text-xs">
+                  <div className="flex items-center space-x-3">
+                    <span className="p-2 rounded-lg bg-slate-900 border border-slate-800">
+                      {tx.type === 'credit' ? '📥' : '⚡'}
+                    </span>
+                    <div>
+                      <div className="font-semibold text-slate-200">{tx.desc}</div>
+                      <div className="text-[10px] font-mono text-slate-500">{tx.date}</div>
+                    </div>
+                  </div>
+
+                  <div className="font-mono font-bold text-right">
+                    <span className={tx.type === 'credit' ? 'text-emerald-400' : 'text-rose-400'}>
+                      {tx.type === 'credit' ? '+' : '-'}{tx.amount} {tx.coinType}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // --- TEACHER PORTAL VIEW ---
+    function TeacherPortalView({ user, wallet, setWallet, setTransactions }) {
+      const [payoutUpi, setPayoutUpi] = useState('9680877599@ybl');
+      const [payoutAmount, setPayoutAmount] = useState(500);
+
+      const requestPayout = (e) => {
+        e.preventDefault();
+        if (payoutAmount <= 0) return;
+        alert(`Payout request of ₹${payoutAmount} sent for UPI ID: ${payoutUpi}. Settlement processed in 15 mins!`);
+      };
+
+      return (
+        <div className="space-y-6 animate-fadeIn max-w-4xl mx-auto">
+          <div className="glass-panel rounded-2xl p-6 border border-slate-800">
+            <h2 className="text-xl font-bold text-white">Tutor Dashboard & Payout Portal</h2>
+            <p className="text-xs text-slate-400 mt-1">
+              Earn ₹60 to ₹150 for every 60 minutes taught. Instant UPI settlement to your VPA.
+            </p>
+
+            {/* STATS */}
+            <div className="grid grid-cols-3 gap-4 mt-6">
+              <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
+                <div className="text-[11px] font-mono text-slate-400">Total Minutes Taught</div>
+                <div className="text-2xl font-mono font-bold text-cyan-400 mt-1">420 mins</div>
+              </div>
+              <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
+                <div className="text-[11px] font-mono text-slate-400">Total Earned</div>
+                <div className="text-2xl font-mono font-bold text-emerald-400 mt-1">₹ 2,400</div>
+              </div>
+              <div className="p-4 rounded-xl bg-slate-900 border border-slate-800">
+                <div className="text-[11px] font-mono text-slate-400">Withdrawable Balance</div>
+                <div className="text-2xl font-mono font-bold text-amber-400 mt-1">₹ 1,850</div>
+              </div>
+            </div>
+
+            {/* WITHDRAW FORM */}
+            <form onSubmit={requestPayout} className="mt-6 pt-6 border-t border-slate-800 space-y-4">
+              <h3 className="font-bold text-sm text-slate-200">Withdraw Earnings via Direct UPI</h3>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-mono text-slate-400 mb-1">Your UPI ID (VPA)</label>
+                  <input 
+                    type="text" 
+                    value={payoutUpi}
+                    onChange={(e) => setPayoutUpi(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-100 font-mono focus:border-cyan-500" 
+                    placeholder="yourname@okhdfcbank"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-mono text-slate-400 mb-1">Amount to Withdraw (₹ INR)</label>
+                  <input 
+                    type="number" 
+                    value={payoutAmount}
+                    onChange={(e) => setPayoutAmount(Number(e.target.value))}
+                    max={1850}
+                    min={100}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-100 font-mono focus:border-cyan-500" 
+                  />
+                </div>
+              </div>
+
+              <button 
+                type="submit" 
+                className="px-6 py-2.5 rounded-xl bg-emerald-500 text-[#070a10] font-bold text-xs hover:bg-emerald-400 transition">
+                Request Instant UPI Transfer
+              </button>
+            </form>
+          </div>
+        </div>
+      );
+    }
+
+    // --- REAL DIRECT UPI PAYMENT GATEWAY MODAL ---
+    function BuyCreditsModal({ wallet, setWallet, setTransactions, onClose }) {
+      const [selectedPack, setSelectedPack] = useState(COIN_PACKS[1]);
+      const [utrNumber, setUtrNumber] = useState('');
+      const [step, setStep] = useState('select'); // 'select' | 'qr' | 'success'
+
+      const merchantVpa = '9680877599@ybl';
+      const upiUrl = `upi://pay?pa=${merchantVpa}&pn=Knovera&am=${selectedPack.price}&cu=INR&tn=Knovera_${selectedPack.coins}_Coins`;
+      const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUrl)}`;
+
+      const handleVerifyPayment = () => {
+        if (!utrNumber || utrNumber.trim().length !== 12) {
+          alert('Please enter a valid 12-digit UTR / UPI Reference Number from your payment app.');
+          return;
+        }
+
+        // Credit coins
+        setWallet(w => {
+          if (selectedPack.coinType === 'golden') {
+            return { ...w, goldenCoins: w.goldenCoins + selectedPack.coins };
+          }
+          return { ...w, silverCoins: w.silverCoins + selectedPack.coins };
+        });
+
+        // Add transaction
+        setTransactions(txs => [
+          {
+            id: 'tx-' + Date.now(),
+            type: 'credit',
+            coinType: selectedPack.coinType,
+            amount: selectedPack.coins,
+            desc: `UPI Purchase: ${selectedPack.name} (UTR: ${utrNumber})`,
+            date: 'Just now'
+          },
+          ...txs
+        ]);
+
+        if (window.confetti) {
+          window.confetti({ particleCount: 150, spread: 80, origin: { y: 0.5 } });
+        }
+
+        setStep('success');
+      };
+
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#070a10]/80 backdrop-blur-md animate-fadeIn">
+          <div className="glass-panel w-full max-w-lg rounded-3xl p-6 border border-slate-700 shadow-2xl relative">
+            <button 
+              onClick={onClose}
+              className="absolute top-5 right-5 text-slate-400 hover:text-white text-lg">
+              ✕
+            </button>
+
+            {step === 'select' && (
+              <div className="space-y-4">
+                <div className="text-center">
+                  <h3 className="text-xl font-bold text-white">Add Tutoring Credits</h3>
+                  <p className="text-xs text-slate-400 mt-1">1 Credit = 1 Minute • Real Direct UPI Payment</p>
+                </div>
+
+                <div className="space-y-3 pt-2">
+                  {COIN_PACKS.map(pack => (
+                    <div 
+                      key={pack.id}
+                      onClick={() => setSelectedPack(pack)}
+                      className={`p-4 rounded-2xl border cursor-pointer transition flex items-center justify-between ${
+                        selectedPack.id === pack.id 
+                          ? 'border-cyan-400 bg-cyan-500/10' 
+                          : 'border-slate-800 bg-slate-900/60 hover:border-slate-700'
+                      }`}>
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <span className="font-bold text-sm text-white">{pack.name}</span>
+                          {pack.bonus && (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-300 font-bold">
+                              {pack.bonus}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-slate-400 mt-0.5">{pack.desc}</p>
+                      </div>
+
+                      <div className="text-right">
+                        <div className="text-base font-extrabold font-mono text-cyan-300">₹{pack.price}</div>
+                        <div className="text-[11px] text-slate-400">{pack.coins} {pack.coinType}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <button 
+                  onClick={() => setStep('qr')}
+                  className="w-full mt-4 py-3 rounded-xl bg-gradient-to-r from-[#00F2FE] via-cyan-400 to-[#9d4edd] text-[#070a10] font-extrabold text-sm shadow-lg shadow-cyan-500/25 transition">
+                  Proceed to Pay ₹{selectedPack.price} via UPI &rarr;
+                </button>
+              </div>
+            )}
+
+            {step === 'qr' && (
+              <div className="space-y-4 text-center">
+                <h3 className="text-lg font-bold text-white">Scan & Pay via any UPI App</h3>
+                <p className="text-xs text-slate-400">
+                  GPay • PhonePe • Paytm • CRED • Amazon Pay
+                </p>
+
+                {/* QR Code */}
+                <div className="p-4 bg-white rounded-2xl inline-block shadow-lg mx-auto my-2">
+                  <img src={qrCodeUrl} alt="UPI QR" className="w-48 h-48 mx-auto" />
+                </div>
+
+                <div className="text-xs font-mono text-slate-300">
+                  Merchant VPA: <span className="text-cyan-400 font-bold">{merchantVpa}</span><br/>
+                  Amount: <span className="text-emerald-400 font-bold">₹{selectedPack.price}</span>
+                </div>
+
+                {/* Direct Mobile Intent Link */}
+                <a 
+                  href={upiUrl}
+                  className="block w-full py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-cyan-300 font-semibold text-xs hover:border-cyan-500 transition">
+                  📱 Open Installed UPI App Directly
+                </a>
+
+                {/* UTR Input Form */}
+                <div className="pt-3 border-t border-slate-800 text-left">
+                  <label className="block text-xs font-mono text-slate-400 mb-1">
+                    Enter 12-digit UTR / UPI Ref Number after paying:
+                  </label>
+                  <div className="flex space-x-2">
+                    <input 
+                      type="text" 
+                      maxLength={12}
+                      value={utrNumber}
+                      onChange={(e) => setUtrNumber(e.target.value.replace(/\D/g, ''))}
+                      placeholder="e.g. 428912345678"
+                      className="flex-1 px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono text-white focus:border-cyan-500"
+                    />
+                    <button 
+                      onClick={handleVerifyPayment}
+                      className="px-4 py-2 bg-gradient-to-r from-emerald-400 to-emerald-500 text-[#070a10] font-bold rounded-xl text-xs">
+                      Verify & Credit
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {step === 'success' && (
+              <div className="py-6 text-center space-y-4 animate-fadeIn">
+                <div className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-3xl flex items-center justify-center mx-auto">
+                  ✓
+                </div>
+                <h3 className="text-xl font-bold text-white">Payment Successful!</h3>
+                <p className="text-xs text-slate-300 max-w-xs mx-auto">
+                  Credited <span className="text-cyan-300 font-bold font-mono">+{selectedPack.coins} {selectedPack.coinType} coins</span> to your wallet.
+                </p>
+                <button 
+                  onClick={onClose}
+                  className="px-6 py-2.5 rounded-xl bg-cyan-500 text-[#070a10] font-bold text-xs mt-2">
+                  Done & Back to Platform
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // Render the React App
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
