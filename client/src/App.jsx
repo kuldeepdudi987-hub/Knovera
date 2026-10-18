@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { ThemeProvider } from './context/ThemeContext.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import { WalletProvider } from './context/WalletContext.jsx';
@@ -94,6 +95,7 @@ export default function App() {
       <AuthProvider>
         <WalletProvider>
           <MainApp />
+          <Analytics />
         </WalletProvider>
       </AuthProvider>
     </ThemeProvider>
