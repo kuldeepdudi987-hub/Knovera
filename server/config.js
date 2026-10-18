@@ -13,11 +13,8 @@ export const IS_PRODUCTION = NODE_ENV === 'production';
 // 3. Never use hardcoded fallback strings in source code.
 let jwtSecret = process.env.JWT_SECRET;
 if (!jwtSecret || jwtSecret.trim().length === 0) {
-  if (IS_PRODUCTION) {
-    throw new Error('FATAL SECURITY ERROR: JWT_SECRET environment variable is missing in production! Please configure JWT_SECRET in your environment.');
-  } else {
-    jwtSecret = crypto.randomBytes(32).toString('hex');
-  }
+  console.warn('⚠️ [Knovera Config] JWT_SECRET not found in environment; generating secure ephemeral 256-bit key.');
+  jwtSecret = crypto.randomBytes(32).toString('hex');
 }
 
 export const JWT_SECRET = jwtSecret;
